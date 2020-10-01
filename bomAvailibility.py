@@ -33,6 +33,9 @@ print(df['PARTNUM'])
 
 octopartData = http.urlopen(url).read()
 response = json.loads(octopartData)
+# request = http.Request(url, None)  # The assembled request
+# response = http.urlopen(request)
+# octopartData = response.read()
 time.sleep(3) # Need 3 seconds between HTTP inquiries for hobbyest use of Octopart API
 # Example from Octopart API documentation
 # print mpn's
