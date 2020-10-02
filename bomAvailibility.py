@@ -11,16 +11,13 @@ import sys
 import pandas
 import requests
 from bs4 import BeautifulSoup
-
+# This is needed for SSL Certificate errors.
 if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
         getattr(ssl, '_create_unverified_context', None)):
         ssl._create_default_https_context = ssl._create_unverified_context
 
-testPart = 'ADA4898-1YRDZ' # TODO: get this value from PARTNUM column of csv file
-
-url = 'https://www.digikey.com/products/en?keywords='
-url += testPart
-print(url)
+# testPart = 'ADA4898-1YRDZ' # TODO: get this value from PARTNUM column of csv file
+# testPart = 'B1H06-V62B'
 
 filename = sys.argv[1]
 df = pandas.read_csv(filename, header=0, delimiter=',')
@@ -30,12 +27,21 @@ df.dropna(subset=['PARTNUM'], inplace=True)
 # Assumes the csv file as been cleaned and thus only
 # has attributes: 'Qty', 'Parts', 'MANUF', 'PARTNUM', 'Value'
 print(df['PARTNUM'])
+print(df.iloc[0, 3])
 
-r = requests.get(url)
-r.encoding
-page_source = r.text
-# print(page_source)
-soup = BeautifulSoup(page_source, 'html.parser')
-quantity = soup.find("td", {"class": "tr-qtyAvailable ptable-param"}) # this works in 'Desktop' view
 # mytd = soup.find("td", {"data-atag": "tr-qtyAvailable"}) # this worked once
-print(quantity.get_text())
+for i, element in enumerate(df['PARTNUM']):
+    try:
+        testPart = element
+        url = 'https://www.digikey.com/products/en?keywords='
+        url += testPart
+        # print(url)
+        r = requests.get(url)
+        r.encoding
+        page_source = r.text
+        soup = BeautifulSoup(page_source, 'html.parser') # this works in 'Desktop' view
+        quantity = soup.find("td", {"class": "tr-qtyAvailable ptable-param"})
+        print(quantity.get_text())
+    except AttributeError:
+        print(testPart, 'No Results')
+        pass
