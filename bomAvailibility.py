@@ -11,6 +11,7 @@ import sys
 import pandas
 import requests
 from bs4 import BeautifulSoup
+import re
 # This is needed for SSL Certificate errors.
 if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
         getattr(ssl, '_create_unverified_context', None)):
@@ -42,8 +43,9 @@ for i, element in enumerate(df['PARTNUM']):
         soup = BeautifulSoup(page_source, 'html.parser') # this works in 'Desktop' view
         digikey_quantity = soup.find("td", {"class": "tr-qtyAvailable ptable-param"})
         quantity = digikey_quantity.get_text()
-        pretty_quantity = quantity.strip()
-        print(testPart, pretty_quantity)
+        # pretty_quantity = quantity.strip()
+        # print(testPart, pretty_quantity)
+        print(testPart, int(re.search(r'/d+', quantity).group()))
     except AttributeError:
         print(testPart, 'No Results')
         pass
