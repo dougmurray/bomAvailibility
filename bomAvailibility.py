@@ -19,11 +19,12 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
 
 # testPart = 'ADA4898-1YRDZ'
 # testPart = 'B1H06-V62B'
+# test_url = 'https://www.digikey.com/products/en?keywords=ADA4898-1YRDZ'
 
 def click_part_link(page_source, partnum):
     soup = BeautifulSoup(page_source, "html.parser")
     for button in soup.find_all('a'):
-        if button.get_text() == 'CGA3E1X7R1E105K080AC':
+        if button.get_text() == str(partnum):
             return button.get('href')
 
 filename = sys.argv[1]
@@ -45,11 +46,12 @@ for i, element in enumerate(df['PARTNUM']):
         # print(url)
         r = requests.get(url)
         r.encoding
+        
         # This
         clicky = click_part_link(r.text, testPart)
         website_preamble = 'https://www.digikey.com'
         specific_part_url = website_preamble + str(clicky)
-        print(specific_part_url)
+        # print(specific_part_url)
         new_r = requests.get(specific_part_url)
         new_r.encoding
         page_source = new_r.text
