@@ -20,6 +20,12 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
 # testPart = 'ADA4898-1YRDZ'
 # testPart = 'B1H06-V62B'
 
+def click_part_link(page_source, partnum):
+    soup = BeautifulSoup(page_source, "html.parser")
+    for button in soup.find_all('a'):
+        if button.get_text() == 'CGA3E1X7R1E105K080AC':
+            return button.get('href')
+
 filename = sys.argv[1]
 df = pandas.read_csv(filename, header=0, delimiter=',')
 # Remove rows with NaN in PARTNUM column
@@ -27,8 +33,8 @@ df.dropna(subset=['PARTNUM'], inplace=True)
 
 # Assumes the csv file as been cleaned and thus only
 # has attributes: 'Qty', 'Parts', 'MANUF', 'PARTNUM', 'Value'
-print(df['PARTNUM'])
-print(df.iloc[0, 3])
+# print(df['PARTNUM'])
+# print(df.iloc[0, 3])
 
 # mytd = soup.find("td", {"data-atag": "tr-qtyAvailable"}) # this worked once
 for i, element in enumerate(df['PARTNUM']):
@@ -39,13 +45,25 @@ for i, element in enumerate(df['PARTNUM']):
         # print(url)
         r = requests.get(url)
         r.encoding
-        page_source = r.text
+        # This
+        clicky = click_part_link(r.text, testPart)
+        website_preamble = 'https://www.digikey.com'
+        specific_part_url = website_preamble + str(clicky)
+        print(specific_part_url)
+        new_r = requests.get(specific_part_url)
+        new_r.encoding
+        page_source = new_r.text
         soup = BeautifulSoup(page_source, 'html.parser') # this works in 'Desktop' view
-        digikey_quantity = soup.find("td", {"class": "tr-qtyAvailable ptable-param"})
+        digikey_quantity = soup.find("span", {"id": "dkQty"})
         quantity = digikey_quantity.get_text()
-        # pretty_quantity = quantity.strip()
-        # print(testPart, pretty_quantity)
         print(testPart, int(re.search(r'/d+', quantity).group()))
+        
+        # Or that
+        # page_source = r.text
+        # soup = BeautifulSoup(page_source, 'html.parser') # this works in 'Desktop' view
+        # digikey_quantity = soup.find("td", {"class": "tr-qtyAvailable ptable-param"})
+        # quantity = digikey_quantity.get_text()
+        # print(testPart, int(re.search(r'/d+', quantity).group()))
     except AttributeError:
         print(testPart, 'No Results')
         pass
